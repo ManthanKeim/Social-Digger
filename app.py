@@ -25,6 +25,7 @@ from skimage import io
 import sys
 from twitter import *
 from selenium.webdriver.firefox.options import Options
+from flask_ngrok import run_with_ngrok
 
 
 #options = webdriver.ChromeOptions()#"
@@ -36,7 +37,7 @@ from selenium.webdriver.firefox.options import Options
 #options.add_argument('--disable-dev-shm-usage')
 ##    options.add_argument('--headless')
 #driver = webdriver.Chrome(executable_path = "/Users/manthan/Documents/GitHub/sih/chromedriver")
-
+#driver = webdriver.Chrome('/Users/manthan/Downloads/chromedriver')
 
 def WebWork(Query,base):
     # print "Open the website"
@@ -69,7 +70,7 @@ def WebWork(Query,base):
     driver.get(url)
     
     
-    t_end = time.time() + 10
+    t_end = time.time() + 50
     html = driver.find_element_by_tag_name('html')
     while time.time() <= t_end:
         html.send_keys(Keys.END)
@@ -116,7 +117,72 @@ def about_page(source,base):
     if os.path.isfile("sih/Samples/"+user_id+".jpg"):
         os.remove("sih/Samples/"+user_id+".jpg")
     return False
+    
+def reco_linked(source,base):
+    driver = webdriver.Chrome('/Users/manthan/Downloads/chromedriver')
+    driver.get('https://www.linkedin.com/login?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin')
+    time.sleep(5)
+    username = driver.find_element_by_id('username')
+    username.send_keys('mayankochar@gmail.com')
+    password = driver.find_element_by_id('password')
+    password.send_keys('airforce27')
+    sign_in_button = driver.find_element_by_xpath('//*[@type="submit"]')
+    sign_in_button.click()
+    time.sleep(5)
+    driver.get("https://www.linkedin.com/in/"+source.split('/')[4]+"/detail/photo")
+    time.sleep(5)
+    img=driver.get_screenshot_as_file("sih/Samples/main_base.png")
 
+    p1 = face_recognition.load_image_file(base)
+    pe1 = face_recognition.face_encodings(p1)[0]
+
+    p2 = face_recognition.load_image_file("sih/Samples/main_base.png")
+    pe2 = face_recognition.face_encodings(p2)
+    if len(pe2)>0:
+        pe2=face_recognition.face_encodings(p2)[0]
+    else:
+        return False
+
+    face_locations = face_recognition.face_locations(p2)
+    face_encodings = face_recognition.face_encodings(p2, face_locations)
+
+    match=False
+    for face_encoding in face_encodings:
+        matches = face_recognition.compare_faces([pe1], face_encoding, tolerance=0.50)
+        if True in matches:
+            match=True
+            break
+    if os.path.isfile("sih/Samples/main_base.png"):
+        os.remove("sih/Samples/main_base.png")
+    driver.quit()
+    return match
+
+def linked_in(Query,base):
+    driver = webdriver.Chrome('/Users/manthan/Downloads/chromedriver')
+    driver.get('https://www.linkedin.com/login?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin')
+    time.sleep(5)
+    username = driver.find_element_by_id('username')
+    username.send_keys('mayankochar@gmail.com')
+    password = driver.find_element_by_id('password')
+    password.send_keys('airforce27')
+    sign_in_button = driver.find_element_by_xpath('//*[@type="submit"]')
+    sign_in_button.click()
+    time.sleep(5)
+    driver.get('https:www.google.com')
+    search_query = driver.find_element_by_name('q')
+    search_query.send_keys('site:linkedin.com/in/ AND "'+Query+'"')
+    search_query.send_keys(Keys.ENTER)
+    time.sleep(0.5)
+    linkedin_urls = driver.find_elements_by_xpath("//div[@class='r']/a")
+    linkedin_urls = [url.get_attribute('href') for url in linkedin_urls]
+    time.sleep(0.5)
+    global ans2
+    for id in linkedin_urls:
+        if reco_linked(id,base):
+            print(id)
+            ans2 = id
+            return
+        
 def reco(u2,base):
     # '/home/anurag/Desktop/Py/sih/Samples/base_photo.jpg'
     p1 = face_recognition.load_image_file(base)
@@ -146,8 +212,60 @@ def reco(u2,base):
         os.remove("/home/anurag/Desktop/Py/sih/Samples/main_base.jpg")
     return match
 
+def Instag(Query,base):
+    driver = webdriver.Chrome('/Users/manthan/Downloads/chromedriver')
+    driver.get("https://www.instagram.com/accounts/login/?source=auth_switcher")
+    time.sleep(5)
+    usern = driver.find_element_by_class_name("_2hvTZ.pexuQ.zyHYP")
+    pw = driver.find_element_by_xpath("//input[@name='password']")
+    usern.send_keys("mayankochar_")
+    pw.send_keys("airforce2712")
+    driver.find_element_by_class_name("sqdOP.L3NKy.y3zKF").click()
+    time.sleep(5)
+    driver.find_element_by_xpath("//button[contains(@class,'HoLwm')]").click()
+    searc = driver.find_element_by_xpath("//input[contains(@placeholder,'Search')]")
+    searc.send_keys(Query)
+    time.sleep(8)
+    ids = driver.find_elements_by_class_name("yCE8d")
+    for ab in ids:
+        url_in = ab.get_attribute('href')
+        if about_page2(url_in,base) is True:
+            break
+
+def about_page2(source,base):
+    driver = webdriver.Chrome('/Users/manthan/Downloads/chromedriver')
+    driver.get(source)
+    time.sleep(5)
+#    about_page=driver.page_source
+#    abt_soup = bs(about_page, "html.parser")
+#    try:
+#        user_id= abt_soup.find_all("meta",{"property":"al:android:url"})[0].get("content",None).split('/')[3]
+#        print(user_id)
+#    except IndexError:
+#        user_id = "100004247586903"
+    user_id = driver.find_element_by_class_name("_7UhW9.fKFbl.yUEEX.KV-D4.fDxYl").text
+#
+#    image="https://graph.facebook.com/"+user_id+"/picture?type=large&width=720&height=720"
+#    driver.find_element_by_class_name("_4Kbb_._54f4m")
+    image = driver.find_element_by_class_name("_6q-tv").get_attribute('href')
+    print(image)
+    urlretrieve(image, "sih/Samples/"+user_id+".jpg")
+    if reco("sih/Samples/"+user_id+".jpg",base) is True:
+        # ans.append(source)
+        global ans
+        ans=source
+        print(source)
+        driver.quit()
+        if os.path.isfile("sih/Samples/"+user_id+".jpg"):
+            os.remove("sih/Samples/"+user_id+".jpg")
+        return True
+
+    if os.path.isfile("sih/Samples/"+user_id+".jpg"):
+        os.remove("sih/Samples/"+user_id+".jpg")
+    return False
 
 app = Flask(__name__)
+#run_with_ngrok(app)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -177,15 +295,32 @@ def predict():
         destination = "".join([target, filename])
         print(destination)
         file.save(destination)
-    WebWork(user_name,destination)
+#    WebWork(user_name,destination)
+#    linked_in(user_name,destination)
+    Instag(user_name,destination)
     try:
-        return render_template('index.html', prediction_text='URL Found for ' + user_name + ' is {}'.format(ans))
+        prediction_text='URL Found for ' + user_name + ' is {}'.format(ans)
     except NameError:
-        return render_template('index.html', prediction_text='URL NOT FOUND!! SORRY ')
+        prediction_text = "URL NOT FOUND!! SORRY "
+    try:
+        prediction_text2='URL Found for ' + user_name + ' is {}'.format(ans2)
+    except NameError:
+        prediction_text2= "URL NOT FOUND!! SORRY!! "
+    
+
+#    return render_template('index.html', prediction_text='URL Found for ' + user_name + ' is {}'.format(ans), prediction_text2='URL Found for ' + user_name + ' is {}'.format(ans2) )
+
+    return render_template('index.html', prediction_text= prediction_text, prediction_text2=prediction_text2 )
+
+#    try:
+#        return render_template('index.html', prediction_text=format(ans))
+#    except NameError:
+#        return render_template('index.html', prediction_text='URL NOT FOUND!! SORRY ')
 
 
 if __name__ == "__main__":
-    app.run(port = 8000, debug=True)
+#    app.run(port = 8010, debug=True)
+    app.run()
 #    options = Options()
 #    #options.add_argument("--headless")
 #    driver = webdriver.Firefox(options=options)

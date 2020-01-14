@@ -36,3 +36,6 @@ scrapes the data and search for criminal using the search option from the web-ap
 <img alt="image_1" src="images/Screenshot 2019-10-19 at 5.15.15 PM.png" width="700px">
 
 <img alt="image_1" src="images/Screenshot 2019-10-19 at 5.15.56 PM.png" width="700px">
+
+### Installation steps
+

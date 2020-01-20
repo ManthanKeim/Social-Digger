@@ -39,3 +39,6 @@ scrapes the data and search for criminal using the search option from the web-ap
 
 ### Installation steps
 
+```
+pip install -r requirements.txt (Python 2), or pip3 install -r requirements.txt (Python 3)
+```

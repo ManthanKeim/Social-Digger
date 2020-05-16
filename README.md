@@ -1,4 +1,4 @@
-# Social-Digger - Build for India
+# Social-Digger
 
 ### Technologies Used:
 * Frontend - HTML/CSS
